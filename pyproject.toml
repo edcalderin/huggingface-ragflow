@@ -1,0 +1,50 @@
+[project]
+name = "historiacard-ragflow"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Erick",email = "edcm.erick@gmail.com"}
+]
+readme = "README.md"
+requires-python = "3.12.9"
+dependencies = [
+    "langchain-core (>=0.3.44,<0.4.0)",
+    "langchain-openai (>=0.3.8,<0.4.0)",
+    "python-dotenv (>=1.0.1,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.9.10"
+
+[tool.ruff.lint]
+select=[
+    # Pyflakes
+    "F",
+    # pycodestyle
+    "E",
+    "W",
+    # isort
+    "I",
+    # pep8-naming
+    "N",
+    # pyupgrade
+    "UP",
+    # flake8-todos
+    "TD",
+    # flake8-tidy-imports
+    "TID",
+    # flake8-import-conventions
+    "ICN",
+    # flake8-bugbear
+    "B",
+    # flake8-bandit
+    "S",
+    # flake8-simplify
+    "SIM"
+]
+
