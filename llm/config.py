@@ -1,21 +1,14 @@
-from pydantic import Field
-from pydantic_settings import BaseSettings
+from dataclasses import dataclass, field
 
 
-class LLMConfig(BaseSettings):
-    model_config = {
-        "frozen": True,  # Makes the entire model immutable
-    }
-    filename: str = Field(
-        default="AI Engineer-Lead - Anexo.pdf", description="Document used for this RAG"
-    )
-    embedding_model_name: str = Field(default="sentence-transformers/all-mpnet-base-v2")
-    collection_name: str = Field(default="historiacard_docs")
-    qdrant_store_path: str = Field(
-        default="./tmp", description="Directory to store embeddings"
-    )
+@dataclass(frozen=True)
+class LLMConfig:
+    filename: str = field(default="AI Engineer-Lead - Anexo.pdf")
+    embedding_model_name: str = field(default="sentence-transformers/all-mpnet-base-v2")
+    collection_name: str = field(default="historiacard_docs")
+    qdrant_store_path: str = field(default="./tmp")
 
     # Retrieval
-    model_name: str = Field(default="meta-llama/Llama-2-7b-chat-hf")
-    task: str = Field(default="text-generation")
-    temperature: float = Field(default=0.2)
+    model_name: str = field(default="meta-llama/Llama-2-7b-chat-hf")
+    task: str = field(default="text-generation")
+    temperature: float = field(default=0.2)
