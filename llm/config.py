@@ -2,7 +2,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
-class EmbeddingConfig(BaseSettings):
+class LLMConfig(BaseSettings):
     model_config = {
         "frozen": True,  # Makes the entire model immutable
     }

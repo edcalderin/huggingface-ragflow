@@ -9,7 +9,7 @@ from langchain_core.documents import Document
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain_qdrant import QdrantVectorStore, RetrievalMode
 
-from llm.config import EmbeddingConfig
+from llm.config import LLMConfig
 
 logging.basicConfig(
     level=logging.INFO, format="%(name)s :: %(levelname)s :: %(message)s"
@@ -19,8 +19,8 @@ path_dir: Path = Path(__file__).parent / "Documents"
 
 
 class EmbeddingLoader:
-    def __init__(self, embedding_config: EmbeddingConfig) -> None:
-        self._embedding_config = embedding_config
+    def __init__(self, llm_config: LLMConfig) -> None:
+        self._llm_config = llm_config
 
     def _get_documents(self) -> list[Document]:
         """Get Documents.
@@ -30,7 +30,7 @@ class EmbeddingLoader:
         Returns:
         List of Documents
         """
-        filename: Path = path_dir / self._embedding_config.filename
+        filename: Path = path_dir / self._llm_config.filename
         loader = PyPDFLoader(filename)
         docs = [doc for doc in loader.lazy_load()]
         return docs
@@ -70,7 +70,7 @@ class EmbeddingLoader:
             logging.info(f"Device: {device}")
 
             return HuggingFaceEmbeddings(
-                model_name=self._embedding_config.embedding_model_name,
+                model_name=self._llm_config.embedding_model_name,
                 multi_process=True,
                 model_kwargs={"device": device},
                 encode_kwargs={"normalize_embeddings": True},
@@ -94,8 +94,8 @@ class EmbeddingLoader:
         try:
             await QdrantVectorStore.afrom_documents(
                 documents=documents,
-                path=self._embedding_config.qdrant_store_path,
-                collection_name=self._embedding_config.collection_name,
+                path=self._llm_config.qdrant_store_path,
+                collection_name=self._llm_config.collection_name,
                 embedding=embeddings,
                 retrieval_mode=RetrievalMode.DENSE,
             )
@@ -117,5 +117,5 @@ class EmbeddingLoader:
 
 
 if __name__ == "__main__":
-    embedding_loader = EmbeddingLoader(embedding_config=EmbeddingConfig())
+    embedding_loader = EmbeddingLoader(llm_config=LLMConfig())
     asyncio.run(embedding_loader.load_to_qdrant_index())
