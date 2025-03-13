@@ -9,7 +9,7 @@ from langchain_core.documents import Document
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain_qdrant import QdrantVectorStore, RetrievalMode
 
-from embeddings.config import EmbeddingConfig
+from llm.config import EmbeddingConfig
 
 logging.basicConfig(
     level=logging.INFO, format="%(name)s :: %(levelname)s :: %(message)s"
@@ -19,8 +19,8 @@ path_dir: Path = Path(__file__).parent / "Documents"
 
 
 class EmbeddingLoader:
-    def __init__(self) -> None:
-        self._embedding_config = EmbeddingConfig()
+    def __init__(self, embedding_config: EmbeddingConfig) -> None:
+        self._embedding_config = embedding_config
 
     def _get_documents(self) -> list[Document]:
         """Get Documents.
@@ -117,5 +117,5 @@ class EmbeddingLoader:
 
 
 if __name__ == "__main__":
-    embedding_loader = EmbeddingLoader()
+    embedding_loader = EmbeddingLoader(embedding_config=EmbeddingConfig())
     asyncio.run(embedding_loader.load_to_qdrant_index())
