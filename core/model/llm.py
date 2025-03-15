@@ -1,13 +1,23 @@
 import torch
 from langchain_huggingface import HuggingFacePipeline
-from transformers import AutoModelForCausalLM, BitsAndBytesConfig, pipeline
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+    pipeline,
+)
+
+from core.config import LLMConfig
 
 
 class HuggingFaceModel:
+    def __init__(self, llm_config: LLMConfig) -> None:
+        self._llm_config: LLMConfig = llm_config
+
     def _load_model(self) -> AutoModelForCausalLM:
         """
         The function `_load_model` loads a model for causal language modeling using
-        Hugging Face's `AutoModelForCausalLM` with specific configuration settings.
+        Hugging Face's `AutoModelForCausalLM` with quantization settings.
 
         Returns:
         The `_load_model` function returns an instance of `AutoModelForCausalLM`
@@ -28,16 +38,28 @@ class HuggingFaceModel:
         except Exception as ex:
             raise Exception(f"Error loading model from HF: {ex}") from ex
 
-    def _create_pipeline(self, model: AutoModelForCausalLM) -> HuggingFacePipeline:
+    def _load_tokenizer(self):
+        """
+        The function `_load_tokenizer` attempts to load a tokenizer using Hugging
+        Face's `AutoTokenizer` with error handling.
+
+        Returns:
+          The `_load_tokenizer` method returns the tokenizer that is loaded using the
+        `AutoTokenizer.from_pretrained` method.
+        """
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(
+                self._llm_config.model_name, trust_remote_code=True
+            )
+            tokenizer.pad_token = tokenizer.eos_token
+            return tokenizer
+        except Exception as ex:
+            raise Exception(f"Error loading tokenizer from HF: {ex}") from ex
+
+    def _create_pipeline(self) -> HuggingFacePipeline:
         """
         The function `_create_pipeline` creates a Hugging Face pipeline for text
         generation using a given model.
-
-        Args:
-        model: The `model` parameter in the `_create_pipeline` method is expected to
-        be an instance of `AutoModelForCausalLM` class from the Hugging Face
-        Transformers library. This model is used for text generation tasks in the
-        pipeline.
 
         Returns:
         An instance of the `HuggingFacePipeline` class with the text generation
@@ -45,7 +67,8 @@ class HuggingFaceModel:
         """
         try:
             text_generation_pipeline: pipeline = pipeline(
-                model=model,
+                model=self._load_model(),
+                tokenizer=self._load_tokenizer(),
                 task=self._llm_config.task,
                 temperature=self._llm_config.temperature,
                 max_new_tokens=self._llm_config.max_new_tokens,
