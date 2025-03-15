@@ -12,3 +12,4 @@ class LLMConfig:
     model_name: str = field(default="meta-llama/Llama-2-7b-chat-hf")
     task: str = field(default="text-generation")
     temperature: float = field(default=0.2)
+    max_new_tokens: int = field(default=300)

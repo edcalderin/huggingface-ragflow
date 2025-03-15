@@ -2,23 +2,22 @@ import asyncio
 import logging
 from pathlib import Path
 
-import torch
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain_qdrant import QdrantVectorStore, RetrievalMode
 
-from llm.config import LLMConfig
+from core.config import LLMConfig
+from core.model.embedding import Embedding
+from utils.logging import setup_logging
 
-logging.basicConfig(
-    level=logging.INFO, format="%(name)s :: %(levelname)s :: %(message)s"
-)
+setup_logging()
 
-path_dir: Path = Path(__file__).parent / "Documents"
+path_dir: Path = Path(__file__).parent / "documents"
 
 
-class EmbeddingLoader:
+class VectorStore:
     def __init__(self, llm_config: LLMConfig) -> None:
         self._llm_config = llm_config
 
@@ -53,31 +52,6 @@ class EmbeddingLoader:
         text_splitter = CharacterTextSplitter()
         return text_splitter.split_documents(docs)
 
-    def _load_embeddings(self) -> HuggingFaceEmbeddings:
-        """
-        The function `_load_embeddings` returns a `HuggingFaceEmbeddings` object with
-        a specified model name and location.
-
-        Returns:
-          An instance of the `HuggingFaceEmbeddings` class with the specified model
-        name and location set to ":memory:".
-        """
-        try:
-            device: torch.device = torch.device(
-                "cuda" if torch.cuda.is_available() else "cpu"
-            )
-
-            logging.info(f"Device: {device}")
-
-            return HuggingFaceEmbeddings(
-                model_name=self._llm_config.embedding_model_name,
-                multi_process=True,
-                model_kwargs={"device": device},
-                encode_kwargs={"normalize_embeddings": True},
-            )
-        except Exception as ex:
-            raise Exception(f"Error loading HuggingFace embeddings: {ex}") from ex
-
     async def _async_store_documents(
         self, documents: list[Document], embeddings: HuggingFaceEmbeddings
     ) -> None:
@@ -107,15 +81,17 @@ class EmbeddingLoader:
             logging.info("Starting...")
             documents: list[Document] = self._get_documents()
             chunked_documents: list[Document] = self._create_chunks(documents)
-            embeddings: HuggingFaceEmbeddings = self._load_embeddings()
+            embeddings: HuggingFaceEmbeddings = Embedding.load_embeddings(
+                self._llm_config.model_name
+            )
             await self._async_store_documents(chunked_documents, embeddings)
-        except Exception as e:
-            logging.error(e)
-            raise e
+        except Exception as ex:
+            logging.error("An error was produced by loading to vector store")
+            raise ex
         else:
             logging.info("Embeddings stored successfully!")
 
 
 if __name__ == "__main__":
-    embedding_loader = EmbeddingLoader(llm_config=LLMConfig())
-    asyncio.run(embedding_loader.load_to_qdrant_index())
+    vector_store = VectorStore(llm_config=LLMConfig())
+    asyncio.run(vector_store.load_to_qdrant_index())
