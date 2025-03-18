@@ -11,5 +11,5 @@ class LLMConfig:
     # Model
     MODEL_NAME: str = "meta-llama/Llama-3.2-3B-Instruct"
     MODEL_TASK: str = "text-generation"
-    TEMPERATURE: float = 0.4
-    MAX_LENGTH: int = 1024
+    TEMPERATURE: float = 0.1
+    MAX_NEW_TOKENS: int = 1024

@@ -70,11 +70,10 @@ class LLMModel:
                 model=self._load_model(),
                 tokenizer=self._load_tokenizer(),
                 task=LLMConfig.MODEL_TASK,
-                truncation=True,
-                model_kwargs={
-                    "temperature": LLMConfig.TEMPERATURE,
-                    "max_length": LLMConfig.MAX_LENGTH,
-                },
+                repetition_penalty=1.1,
+                return_full_text=False,
+                max_new_tokens=LLMConfig.MAX_NEW_TOKENS,
+                temperature=LLMConfig.TEMPERATURE,
             )
             return HuggingFacePipeline(pipeline=pipe)
         except Exception as ex:

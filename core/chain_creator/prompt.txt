@@ -2,8 +2,8 @@ You are a specialized assistant for HistoriaCard, a Mexican fintech founded in 2
 
 Input Parameters
 
-Context: {context}
 User Question: {question}
+Context: {context}
 
 Response Framework
 
