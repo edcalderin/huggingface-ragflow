@@ -9,7 +9,7 @@ from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain_qdrant import QdrantVectorStore, RetrievalMode
 
 from core.config import LLMConfig
-from core.model.embedding import Embedding
+from core.model import Embedding
 from utils.logging import setup_logging
 
 setup_logging()
@@ -18,10 +18,8 @@ path_dir: Path = Path(__file__).parent / "documents"
 
 
 class VectorStore:
-    def __init__(self, llm_config: LLMConfig) -> None:
-        self._llm_config = llm_config
-
-    def _get_documents(self) -> list[Document]:
+    @staticmethod
+    def _get_documents() -> list[Document]:
         """Get Documents.
 
         Extract document from pdf file.
@@ -29,7 +27,7 @@ class VectorStore:
         Returns:
         List of Documents
         """
-        filename: Path = path_dir / self._llm_config.filename
+        filename: Path = path_dir / LLMConfig.FILENAME
         loader = PyPDFLoader(filename)
         docs = [doc for doc in loader.lazy_load()]
         return docs
@@ -52,8 +50,9 @@ class VectorStore:
         text_splitter = CharacterTextSplitter()
         return text_splitter.split_documents(docs)
 
+    @staticmethod
     async def _async_store_documents(
-        self, documents: list[Document], embeddings: HuggingFaceEmbeddings
+        documents: list[Document], embeddings: HuggingFaceEmbeddings
     ) -> None:
         """
         This async function stores documents with embeddings in a Qdrant vector store.
@@ -68,8 +67,8 @@ class VectorStore:
         try:
             await QdrantVectorStore.afrom_documents(
                 documents=documents,
-                path=self._llm_config.qdrant_store_path,
-                collection_name=self._llm_config.collection_name,
+                path=LLMConfig.QDRANT_STORE_PATH,
+                collection_name=LLMConfig.COLLECTION_NAME,
                 embedding=embeddings,
                 retrieval_mode=RetrievalMode.DENSE,
             )
@@ -82,7 +81,7 @@ class VectorStore:
             documents: list[Document] = self._get_documents()
             chunked_documents: list[Document] = self._create_chunks(documents)
             embeddings: HuggingFaceEmbeddings = Embedding.load_embeddings(
-                self._llm_config.model_name
+                LLMConfig.MODEL_NAME
             )
             await self._async_store_documents(chunked_documents, embeddings)
         except Exception as ex:
@@ -93,5 +92,5 @@ class VectorStore:
 
 
 if __name__ == "__main__":
-    vector_store = VectorStore(llm_config=LLMConfig())
+    vector_store = VectorStore()
     asyncio.run(vector_store.load_to_qdrant_index())

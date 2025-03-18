@@ -1,15 +1,15 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
 class LLMConfig:
-    filename: str = field(default="AI Engineer-Lead - Anexo.pdf")
-    embedding_model_name: str = field(default="sentence-transformers/all-mpnet-base-v2")
-    collection_name: str = field(default="historiacard_docs")
-    qdrant_store_path: str = field(default="./tmp")
+    FILENAME: str = "AI Engineer-Lead - Anexo.pdf"
+    EMBEDDING_MODEL_NAME: str = "sentence-transformers/all-mpnet-base-v2"
+    COLLECTION_NAME: str = "historiacard_docs"
+    QDRANT_STORE_PATH: str = "./tmp"
 
-    # Retrieval
-    model_name: str = field(default="meta-llama/Llama-2-7b-chat-hf")
-    task: str = field(default="text-generation")
-    temperature: float = field(default=0.2)
-    max_new_tokens: int = field(default=300)
+    # Model
+    MODEL_NAME: str = "meta-llama/Llama-3.2-3B-Instruct"
+    MODEL_TASK: str = "text-generation"
+    TEMPERATURE: float = 0.4
+    MAX_LENGTH: int = 1024

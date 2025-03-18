@@ -30,6 +30,7 @@ class Embedding:
             )
 
             logging.info(f"Device: {device}")
+            logging.info(f"Device: {torch.cuda.get_device_name(0)}")
 
             return HuggingFaceEmbeddings(
                 model_name=model_name,

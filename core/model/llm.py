@@ -6,13 +6,21 @@ from transformers import (
     BitsAndBytesConfig,
     pipeline,
 )
+from transformers.utils.logging import set_verbosity_error
 
 from core.config import LLMConfig
 
+set_verbosity_error()
 
-class HuggingFaceModel:
-    def __init__(self, llm_config: LLMConfig) -> None:
-        self._llm_config: LLMConfig = llm_config
+
+class LLMModel:
+    def __init__(self) -> None:
+        self._bnb_config: BitsAndBytesConfig = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.bfloat16,
+            bnb_4bit_use_double_quant=False,
+        )
 
     def _load_model(self) -> AutoModelForCausalLM:
         """
@@ -24,16 +32,10 @@ class HuggingFaceModel:
         loaded from the Hugging Face model with the specified configuration settings.
         """
         try:
-            bnb_config: BitsAndBytesConfig = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=torch.bfloat16,
-            )
             return AutoModelForCausalLM.from_pretrained(
-                self._llm_config.model_name,
-                device_map="auto",
-                trust_remote_code=True,
-                quantization_config=bnb_config,
+                LLMConfig.MODEL_NAME,
+                quantization_config=self._bnb_config,
+                low_cpu_mem_usage=True,
             )
         except Exception as ex:
             raise Exception(f"Error loading model from HF: {ex}") from ex
@@ -48,15 +50,13 @@ class HuggingFaceModel:
         `AutoTokenizer.from_pretrained` method.
         """
         try:
-            tokenizer = AutoTokenizer.from_pretrained(
-                self._llm_config.model_name, trust_remote_code=True
-            )
+            tokenizer = AutoTokenizer.from_pretrained(LLMConfig.MODEL_NAME)
             tokenizer.pad_token = tokenizer.eos_token
             return tokenizer
         except Exception as ex:
             raise Exception(f"Error loading tokenizer from HF: {ex}") from ex
 
-    def _create_pipeline(self) -> HuggingFacePipeline:
+    def create_pipeline(self) -> HuggingFacePipeline:
         """
         The function `_create_pipeline` creates a Hugging Face pipeline for text
         generation using a given model.
@@ -66,13 +66,16 @@ class HuggingFaceModel:
         pipeline created using the provided model and configuration parameters.
         """
         try:
-            text_generation_pipeline: pipeline = pipeline(
+            pipe: pipeline = pipeline(
                 model=self._load_model(),
                 tokenizer=self._load_tokenizer(),
-                task=self._llm_config.task,
-                temperature=self._llm_config.temperature,
-                max_new_tokens=self._llm_config.max_new_tokens,
+                task=LLMConfig.MODEL_TASK,
+                truncation=True,
+                model_kwargs={
+                    "temperature": LLMConfig.TEMPERATURE,
+                    "max_length": LLMConfig.MAX_LENGTH,
+                },
             )
-            return HuggingFacePipeline(pipeline=text_generation_pipeline)
+            return HuggingFacePipeline(pipeline=pipe)
         except Exception as ex:
             raise (f"Error creating HF Pipeline: {ex}") from ex
