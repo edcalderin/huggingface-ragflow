@@ -1,4 +1,3 @@
-import logging
 from operator import itemgetter
 from pathlib import Path
 
@@ -16,6 +15,8 @@ setup_logging()
 class ConversationalChain:
     def __init__(self) -> None:
         self._llm_model: LLMModel = LLMModel()
+        self._retriever = Retriever.retrieve()
+        self._llm = self._llm_model.create_pipeline()
 
     def _get_prompt_template(self) -> ChatPromptTemplate:
         try:
@@ -26,24 +27,13 @@ class ConversationalChain:
             raise ex
 
     def get_chain(self) -> RunnableSequence:
-        retriever = Retriever.retrieve()
-        llm = self._llm_model.create_pipeline()
         chain = (
             {
-                "context": itemgetter("question") | retriever,
+                "context": itemgetter("question") | self._retriever,
                 "question": itemgetter("question"),
             }
             | self._get_prompt_template()
-            | llm
+            | self._llm
             | StrOutputParser()
         )
         return chain
-
-
-if __name__ == "__main__":
-    response = (
-        ConversationalChain()
-        .get_chain()
-        .invoke({"question": "Cual es la mision de HistoriaCard?"})
-    )
-    logging.info(response)

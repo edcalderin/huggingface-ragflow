@@ -7,5 +7,6 @@ langchain-qdrant==0.2.0
 pypdf==5.3.1
 python-dotenv==1.0.1
 ruff==0.9.10
+streamlit==1.43.2
 torch==2.6.0+cu126
 transformers==4.49.0
