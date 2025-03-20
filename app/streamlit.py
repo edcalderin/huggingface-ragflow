@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import streamlit as st
 import torch
 
@@ -19,7 +21,9 @@ def main():
     if not st.session_state.model_loaded:
         # Load the model only once
         with st.spinner("Loading model..."):
-            st.session_state.chatbot_model = ConversationalChain().get_chain()
+            st.session_state.chatbot_model = ConversationalChain().chain_with_history(
+                str(uuid4())
+            )
             st.session_state.model_loaded = True
 
     # Display chat history
@@ -44,7 +48,7 @@ def main():
             st.write(response)
 
         # Add assistant response to chat history
-        # st.session_state.chat_history.append({"role": "assistant", "content": response})
+        st.session_state.chat_history.append({"role": "assistant", "content": response})
 
 
 if __name__ == "__main__":

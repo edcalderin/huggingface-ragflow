@@ -6,23 +6,24 @@ from qdrant_client import QdrantClient
 
 from core.config import LLMConfig
 from core.model import Embedding
-from utils.logging import setup_logging
+from core.utils.logging import setup_logging
 
 setup_logging()
 
 
 class Retriever:
-    @staticmethod
-    def retrieve():
+    def __init__(self) -> None:
+        self._embeddings: HuggingFaceEmbeddings = Embedding.load_embeddings(
+            model_name=LLMConfig.EMBEDDING_MODEL_NAME
+        )
+        logging.info("Loading Qdrant retriever")
+        self._client = QdrantClient(path=LLMConfig.QDRANT_STORE_PATH)
+
+    def retrieve(self):
         try:
-            embeddings: HuggingFaceEmbeddings = Embedding.load_embeddings(
-                model_name=LLMConfig.EMBEDDING_MODEL_NAME
-            )
-            logging.info("Loading Qdrant retriever")
-            client = QdrantClient(path=LLMConfig.QDRANT_STORE_PATH)
             vector_store = QdrantVectorStore(
-                client=client,
-                embedding=embeddings,
+                client=self._client,
+                embedding=self._embeddings,
                 collection_name=LLMConfig.COLLECTION_NAME,
             )
             return vector_store.as_retriever()

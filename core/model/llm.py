@@ -34,6 +34,7 @@ class LLMModel:
         try:
             return AutoModelForCausalLM.from_pretrained(
                 LLMConfig.MODEL_NAME,
+                device_map="auto",
                 quantization_config=self._bnb_config,
                 low_cpu_mem_usage=True,
             )

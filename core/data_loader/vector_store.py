@@ -3,18 +3,16 @@ import logging
 from pathlib import Path
 
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import DirectoryLoader
 from langchain_core.documents import Document
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain_qdrant import QdrantVectorStore, RetrievalMode
 
 from core.config import LLMConfig
 from core.model import Embedding
-from utils.logging import setup_logging
+from core.utils.logging import setup_logging
 
 setup_logging()
-
-path_dir: Path = Path(__file__).parent / "documents"
 
 
 class VectorStore:
@@ -27,10 +25,9 @@ class VectorStore:
         Returns:
         List of Documents
         """
-        filename: Path = path_dir / LLMConfig.FILENAME
-        loader = PyPDFLoader(filename)
-        docs = [doc for doc in loader.lazy_load()]
-        return docs
+        path_dir: Path = Path(__file__).parent / "documents"
+        loader = DirectoryLoader(path_dir, glob="**/*.pdf")
+        return [doc for doc in loader.lazy_load()]
 
     @staticmethod
     def _create_chunks(docs: list[Document]) -> list[Document]:
