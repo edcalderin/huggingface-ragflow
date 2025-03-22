@@ -72,7 +72,7 @@ class VectorStore:
         except Exception as ex:
             raise Exception(f"Error by initializing vector embeddings: {ex}") from ex
 
-    async def load_to_qdrant_index(self) -> None:
+    async def __call__(self) -> None:
         try:
             logging.info("Starting...")
             documents: list[Document] = self._get_documents()
@@ -90,4 +90,4 @@ class VectorStore:
 
 if __name__ == "__main__":
     vector_store = VectorStore()
-    asyncio.run(vector_store.load_to_qdrant_index())
+    asyncio.run(vector_store())
