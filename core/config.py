@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class LLMConfig:
-    FILENAME: str = "AI Engineer-Lead - Anexo.pdf"
     EMBEDDING_MODEL_NAME: str = "sentence-transformers/all-mpnet-base-v2"
     COLLECTION_NAME: str = "historiacard_docs"
     QDRANT_STORE_PATH: str = "./tmp"
