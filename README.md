@@ -11,8 +11,8 @@ This project implements a classic Retrieval-Augmented Generation (RAG) system us
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/edcalderin/HuggingFace_RAGFlow.git
-cd HuggingFace_RAGFlow
+git clone https://github.com/edcalderin/huggingface-ragflow.git
+cd huggingface-ragflow
 ```
 
 ### 2. Create and activate the Conda environment
